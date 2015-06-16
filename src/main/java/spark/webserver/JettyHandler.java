@@ -16,22 +16,21 @@
  */
 package spark.webserver;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.session.SessionHandler;
+import org.eclipse.jetty.util.log.Log;
+import org.eclipse.jetty.util.log.Logger;
+import spark.utils.IOUtils;
 
 import javax.servlet.Filter;
+import javax.servlet.ReadListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
-
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.session.SessionHandler;
-import org.eclipse.jetty.util.log.Log;
-import org.eclipse.jetty.util.log.Logger;
-
-import spark.utils.IOUtils;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 /**
  * Simple Jetty Handler
@@ -90,6 +89,25 @@ class JettyHandler extends SessionHandler {
             public CachedServletInputStream() {
                 byteArrayInputStream = new ByteArrayInputStream(cachedBytes);
             }
+
+
+            @Override
+            public boolean isFinished() {
+                return byteArrayInputStream.available() == 0;
+            }
+
+
+            @Override
+            public boolean isReady() {
+                return byteArrayInputStream.available() > 0;
+            }
+
+
+            @Override
+            public void setReadListener(ReadListener readListener) {
+                throw new UnsupportedOperationException();
+            }
+
 
             @Override
             public int read() {
